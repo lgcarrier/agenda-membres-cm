@@ -51,7 +51,15 @@ Les agendas sont stockés au format CSV dans les dossiers `active` et `inactive`
 
 ## Licence
 
-© 2024 - Tous droits réservés
+© 2025 - Tous droits réservés
+
+## Disclaimer
+
+Ce projet n'est pas affilié au gouvernement du Québec. Les données sont extraites de sources publiques à des fins d'information seulement. L'exactitude et l'actualité des données ne sont pas garanties. Les utilisateurs sont invités à consulter le site officiel du gouvernement du Québec pour les informations les plus à jour.
+
+Les agendas collectés sont des données publiques disponibles sur quebec.ca. Ce projet facilite uniquement leur accès et leur organisation.
+
+Ceci ne constitue pas un avis juridique. Pour toute question légale, veuillez consulter un professionnel du droit qualifié.
 
 ## Contribution
 
