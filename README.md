@@ -9,10 +9,12 @@ Ce projet permet de télécharger et de suivre automatiquement les agendas publi
 Le projet est organisé comme suit :
 
 - `main.py` : Script d'extraction automatique des agendas depuis quebec.ca
+- `generate_daily_summaries.py` : Script de génération des résumés quotidiens au format Markdown
 - `requirements.txt` : Liste des dépendances Python requises
 - `minister_agendas/` : Répertoire contenant les agendas des ministres
   - `active/` : Agendas des ministres actuellement en fonction
   - `inactive/` : Agendas des anciens ministres
+- `daily_summaries/` : Répertoire contenant les résumés quotidiens des agendas
 - `minister_agendas.log` : Journal des opérations d'extraction
 
 ## Prérequis
@@ -47,9 +49,23 @@ Le script va :
 3. Classer les fichiers dans les dossiers appropriés (active/inactive)
 4. Journaliser les opérations dans minister_agendas.log
 
+Pour générer les résumés quotidiens des agendas :
+```bash
+python generate_daily_summaries.py
+```
+
+Le script va :
+1. Analyser tous les agendas des ministres actifs
+2. Générer des résumés quotidiens au format Markdown pour les 7 derniers jours
+3. Sauvegarder les résumés dans le dossier `daily_summaries/` avec le format `YYYY-MM-DD.md`
+
 ## Structure des données
 
-Les agendas sont stockés au format CSV dans les dossiers `active` et `inactive`. Chaque fichier correspond à un ministre et contient leurs activités publiques. Les données sont extraites directement du site officiel du gouvernement du Québec.
+Les agendas sont stockés au format CSV dans les dossiers `active` et `inactive`. Chaque fichier correspond à un ministre et contient leurs activités publiques.
+
+Les résumés quotidiens sont stockés au format Markdown dans le dossier `daily_summaries`. Chaque fichier contient une vue consolidée des activités de tous les ministres pour une journée donnée, triées chronologiquement.
+
+Les données sont extraites directement du site officiel du gouvernement du Québec.
 
 ## Licence
 
