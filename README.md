@@ -2,6 +2,8 @@
 
 Ce projet permet de télécharger et de suivre automatiquement les agendas publics des membres du Conseil des ministres du Québec à partir du site web officiel du gouvernement du Québec.
 
+![François Legault, Premier ministre du Québec](/docs/francois-legault-quebec-premier.jpg)
+
 ## Structure du projet
 
 Le projet est organisé comme suit :
