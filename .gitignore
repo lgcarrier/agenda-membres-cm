@@ -48,3 +48,4 @@ logs/
 # Generated files
 minister_agendas/
 daily_summaries/
+weekly_summary.json
