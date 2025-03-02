@@ -1,6 +1,7 @@
 import os
 import csv
 import html
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -23,6 +24,9 @@ def get_minister_name(filename):
 def read_agenda_file(filepath):
     """Read and parse a CSV agenda file"""
     activities = []
+    # Determine if minister is active based on file path
+    status = "active" if "/active/" in str(filepath) else "inactive"
+    
     with open(filepath, 'r', encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=';', quotechar='"')
         next(reader)  # Skip header
@@ -45,13 +49,14 @@ def read_agenda_file(filepath):
                         'date': date,
                         'time': time,
                         'participants': participants,
-                        'minister': get_minister_name(filepath)
+                        'minister': get_minister_name(filepath),
+                        'minister_status': status
                     })
                 except ValueError:
                     continue  # Skip invalid dates/times
     return activities
 
-def generate_daily_summary(activities, date):
+def generate_daily_summary_markdown(activities, date):
     """Generate markdown content for a specific day"""
     day_activities = [a for a in activities if a['date'].date() == date.date()]
     if not day_activities:
@@ -59,7 +64,7 @@ def generate_daily_summary(activities, date):
     
     content = [f"# Agenda des ministres - {date.strftime('%d %B %Y')}\n"]
     
-    # Sort activities by time, putting activities without time at the end
+    # Sort activities by time, placing those without a time at the end
     day_activities.sort(key=lambda x: (x['time'] is None, x['time']))
     
     for activity in day_activities:
@@ -80,27 +85,78 @@ def generate_daily_summary(activities, date):
     
     return '\n'.join(content)
 
+def generate_daily_summary_json(activities, date):
+    """Generate JSON data for a specific day"""
+    day_activities = [a for a in activities if a['date'].date() == date.date()]
+    if not day_activities:
+        return None
+    
+    day_activities.sort(key=lambda x: (x['time'] is None, x['time']))
+    
+    events = []
+    for activity in day_activities:
+        events.append({
+            'time': activity['time'].strftime('%H:%M') if activity['time'] else 'Heure non spécifiée',
+            'minister': activity['minister'],
+            'minister_status': activity['minister_status'],
+            'description': activity['description'] or activity['type'],
+            'location': activity['location'],
+            'participants': activity['participants']
+        })
+    
+    return {'date': date.strftime('%Y-%m-%d'), 'events': events}
+
+def generate_weekly_summary(daily_summaries):
+    """Aggregate a list of daily summaries into a weekly summary JSON"""
+    week_data = [summary for summary in daily_summaries if summary is not None]
+    return {'week': week_data}
+
 def main():
-    # Create output directory
+    # Create output directory for daily summaries if it doesn't exist
     output_dir = Path('daily_summaries')
     output_dir.mkdir(exist_ok=True)
     
-    # Read all active agendas
+    # Read all agendas (active and inactive)
     all_activities = []
+    
+    # Read active agendas
     active_dir = Path('minister_agendas/active')
     for csv_file in active_dir.glob('*.csv'):
         activities = read_agenda_file(csv_file)
         all_activities.extend(activities)
     
-    # Generate summaries for the last 7 days
+    # Read inactive agendas
+    inactive_dir = Path('minister_agendas/inactive')
+    for csv_file in inactive_dir.glob('*.csv'):
+        activities = read_agenda_file(csv_file)
+        all_activities.extend(activities)
+    
+    all_daily_json = []
     today = datetime.now()
-    for i in range(7):
+    
+    # Generate summaries for the last 31 days
+    for i in range(31):
         date = today - timedelta(days=i)
-        summary = generate_daily_summary(all_activities, date)
-        if summary:
-            output_file = output_dir / f"{date.strftime('%Y-%m-%d')}.md"
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(summary)
+        
+        # Markdown summary
+        markdown_summary = generate_daily_summary_markdown(all_activities, date)
+        if markdown_summary:
+            md_output_file = output_dir / f"{date.strftime('%Y-%m-%d')}.md"
+            with open(md_output_file, 'w', encoding='utf-8') as f:
+                f.write(markdown_summary)
+        
+        # JSON summary
+        daily_json = generate_daily_summary_json(all_activities, date)
+        if daily_json:
+            json_output_file = output_dir / f"{date.strftime('%Y-%m-%d')}.json"
+            with open(json_output_file, 'w', encoding='utf-8') as f:
+                json.dump(daily_json, f, ensure_ascii=False, indent=2)
+            all_daily_json.append(daily_json)
+    
+    # Generate weekly summary JSON file
+    weekly_summary = generate_weekly_summary(all_daily_json)
+    with open("weekly_summary.json", 'w', encoding='utf-8') as f:
+        json.dump(weekly_summary, f, ensure_ascii=False, indent=2)
 
 if __name__ == '__main__':
     main()
